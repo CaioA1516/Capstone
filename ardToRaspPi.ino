@@ -29,7 +29,7 @@ const int DEBOUNCE = 100;
 // Communication latency compensation
 const int LATENCY  = 75;
 int buttonPressed = -1;
-int whichButtonPressed[5] = {0, 0, 0, 0};
+int whichButtonPressed[4] = {0, 0, 0, 0};
 int val; // temporary value
 
 void setup() {
@@ -50,7 +50,7 @@ void loop() {
     whichButtonPressed[i] = val;
     Serial.print(val);
     Serial.print(", ");
-    if (!val) {
+    if (val == 1) {
       buttonPressed = 1;
       delayMicroseconds(100);
     }
