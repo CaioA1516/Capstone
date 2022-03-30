@@ -28,10 +28,10 @@ uint8_t buttons[4][2] = {{BUTTON_UP, KEY_PRESS_W}, // Participants must choose w
 const int DEBOUNCE = 100;
 // Communication latency compensation
 const int LATENCY  = 75;
-int threshold = 100;
-int buttonPressed = -1;
+int threshold = 450;
 int whichButtonPressed[4] = {0, 0, 0, 0};
 int val; // temporary value
+bool prevButtonPressed[4] = {false, false, false, false};
 
 void setup() {
   // Setup all buttons as input pins
@@ -52,19 +52,26 @@ void loop() {
     Serial.print(val);
     Serial.print(", ");
     if (val > threshold) {
-      buttonPressed = 1;
       delayMicroseconds(100);
     }
   }
   Serial.println("");
 
-  if (buttonPressed == 1) {
-    for (int i = 0; i < 4; i++ ) {
-      if (whichButtonPressed[i] > threshold) {
-        Keyboard.write(buttons[i][1]);
-      }
+
+  for (int i = 0; i < 4; i++ ) {
+    if (whichButtonPressed[i] > threshold && prevButtonPressed[i] == false) {
+      Keyboard.write(buttons[i][1]);
+      prevButtonPressed[i] = true;
+    } else if (whichButtonPressed[i] <= threshold && prevButtonPressed[i] == true) {
+      prevButtonPressed[i] = false;
     }
-    buttonPressed = -1;
   }
+
+  /*
+  Serial.print(prevButtonPressed[0]);
+  Serial.print(prevButtonPressed[1]);
+  Serial.print(prevButtonPressed[2]);
+  Serial.println(prevButtonPressed[3]);
+  */
   delay(LATENCY);
 }
