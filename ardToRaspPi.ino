@@ -2,10 +2,10 @@
 
 /* Arduino to RaspPi Code */
 //Define the Buttons we are using in the hardware
-#define BUTTON_UP       2
-#define BUTTON_LEFT     3
-#define BUTTON_DOWN     5
-#define BUTTON_RIGHT    13
+#define BUTTON_UP       A5
+#define BUTTON_LEFT     A4
+#define BUTTON_DOWN     A3
+#define BUTTON_RIGHT    A2
 
 /* Define the Bytes we need to send for a press of each key. Edit here
   to change the keys pressed for whatever game you want to play. For a list
@@ -28,6 +28,7 @@ uint8_t buttons[4][2] = {{BUTTON_UP, KEY_PRESS_W}, // Participants must choose w
 const int DEBOUNCE = 100;
 // Communication latency compensation
 const int LATENCY  = 75;
+int threshold = 100;
 int buttonPressed = -1;
 int whichButtonPressed[4] = {0, 0, 0, 0};
 int val; // temporary value
@@ -46,11 +47,11 @@ void setup() {
 
 void loop() {
   for (int i = 0; i < 4; i++ ) {
-    val = digitalRead(buttons[i][0]);
+    val = analogRead(buttons[i][0]);
     whichButtonPressed[i] = val;
     Serial.print(val);
     Serial.print(", ");
-    if (val == 1) {
+    if (val > threshold) {
       buttonPressed = 1;
       delayMicroseconds(100);
     }
@@ -59,7 +60,7 @@ void loop() {
 
   if (buttonPressed == 1) {
     for (int i = 0; i < 4; i++ ) {
-      if (whichButtonPressed[i] == 1) {
+      if (whichButtonPressed[i] > threshold) {
         Keyboard.write(buttons[i][1]);
       }
     }
