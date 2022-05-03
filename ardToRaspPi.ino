@@ -4,8 +4,8 @@
 //Define the Buttons we are using in the hardware
 #define BUTTON_UP       A5
 #define BUTTON_LEFT     A4
-#define BUTTON_DOWN     A3
-#define BUTTON_RIGHT    A2
+#define BUTTON_DOWN     A2
+#define BUTTON_RIGHT    A3
 #define BUTTON_PAUSE    A1
 
 /* Define the Bytes we need to send for a press of each key. Edit here
@@ -29,7 +29,7 @@ uint8_t buttons[5][2] = {{BUTTON_UP, KEY_PRESS_W}, // Participants must choose w
 
 // Communication latency compensation
 const int LATENCY  = 75;
-int threshold = 400;
+int threshold[5] = {125, 125, 125, 125, 125}; // w, a, s, d, q
 int whichButtonPressed[5] = {0, 0, 0, 0, 0};
 int val; // temporary value
 bool prevButtonPressed[5] = {false, false, false, false, false};
@@ -39,10 +39,14 @@ void setup() {
   for (int i = 0; i < 5; i++) {
     pinMode(buttons[i][0], INPUT_PULLUP);
   }
-
   // Begin the HID protocol for a keyboard
   Keyboard.begin();
-  Serial.begin(112500);
+  Serial.begin(115200);
+  delay(1000);
+  for (int i = 0; i < 5; i++ ) {
+    val = analogRead(buttons[i][0]);
+    threshold[i] = val + 50;
+  }
 
 }
 
@@ -51,8 +55,10 @@ void loop() {
     val = analogRead(buttons[i][0]);
     whichButtonPressed[i] = val;
     Serial.print(val);
+    Serial.print(" - ");
+    Serial.print(threshold[i]);
     Serial.print(", ");
-    if (val > threshold) {
+    if (val > threshold[i]) {
       delayMicroseconds(100);
     }
   }
@@ -60,10 +66,10 @@ void loop() {
 
 
   for (int i = 0; i < 5; i++ ) {
-    if (whichButtonPressed[i] > threshold && prevButtonPressed[i] == false) {
+    if (whichButtonPressed[i] > threshold[i] && prevButtonPressed[i] == false) {
       Keyboard.write(buttons[i][1]);
       prevButtonPressed[i] = true;
-    } else if (whichButtonPressed[i] <= threshold && prevButtonPressed[i] == true) {
+    } else if (whichButtonPressed[i] <= threshold[i] && prevButtonPressed[i] == true) {
       prevButtonPressed[i] = false;
     }
   }
